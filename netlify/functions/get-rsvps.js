@@ -1,20 +1,10 @@
 const https = require('https');
 
-exports.handler = async function(event, context) {
-  const siteId = process.env.NETLIFY_SITE_ID;
-  const token  = process.env.NETLIFY_TOKEN;
-
-  if (!siteId || !token) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: 'Missing NETLIFY_SITE_ID or NETLIFY_TOKEN environment variables.' })
-    };
-  }
-
-  return new Promise((resolve) => {
+function fetchPage(siteId, token, offset) {
+  return new Promise((resolve, reject) => {
     const options = {
       hostname: 'api.netlify.com',
-      path: `/api/v1/sites/${siteId}/forms`,
+      path: `/api/v1/sites/${siteId}/forms/rsvp/submissions?per_page=100&offset=${offset}`,
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -27,27 +17,52 @@ exports.handler = async function(event, context) {
       res.on('data', chunk => { body += chunk; });
       res.on('end', () => {
         if (res.statusCode !== 200) {
-          resolve({
-            statusCode: res.statusCode,
-            body: JSON.stringify({ error: `Netlify API returned ${res.statusCode}`, detail: body, siteId: siteId.slice(0,8) + '...' })
-          });
+          reject(new Error(`Netlify API returned ${res.statusCode}: ${body}`));
           return;
         }
-        resolve({
-          statusCode: 200,
-          headers: { 'Content-Type': 'application/json' },
-          body
-        });
+        try { resolve(JSON.parse(body)); }
+        catch (e) { reject(new Error('Invalid JSON response')); }
       });
     });
 
-    req.on('error', (err) => {
-      resolve({
-        statusCode: 500,
-        body: JSON.stringify({ error: err.message })
-      });
-    });
-
+    req.on('error', reject);
     req.end();
   });
+}
+
+exports.handler = async function(event, context) {
+  const siteId = process.env.NETLIFY_SITE_ID;
+  const token  = process.env.NETLIFY_TOKEN;
+
+  if (!siteId || !token) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'Missing NETLIFY_SITE_ID or NETLIFY_TOKEN environment variables.' })
+    };
+  }
+
+  try {
+    let all = [];
+    let offset = 0;
+    while (true) {
+      const page = await fetchPage(siteId, token, offset);
+      all = all.concat(page);
+      if (page.length < 100) break;
+      offset += 100;
+    }
+
+    return {
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store'
+      },
+      body: JSON.stringify(all)
+    };
+  } catch (err) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message })
+    };
+  }
 };

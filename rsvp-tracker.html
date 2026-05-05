@@ -335,7 +335,7 @@
       '<tr><td colspan="5" class="state-msg">Loading…</td></tr>';
 
     try {
-      const res = await fetch('/.netlify/functions/get-rsvps');
+      const res = await fetch('/.netlify/functions/get-rsvps?t=' + Date.now());
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
