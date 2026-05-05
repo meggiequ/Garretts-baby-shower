@@ -330,18 +330,12 @@
   let sortKey = 'created_at';
   let sortDir = -1; // -1 = desc
 
-  const SITE_ID = 'YOUR_SITE_ID_HERE';
-  const TOKEN   = 'YOUR_TOKEN_HERE';
-
   async function loadRsvps() {
     document.getElementById('rsvp-tbody').innerHTML =
       '<tr><td colspan="5" class="state-msg">Loading…</td></tr>';
 
     try {
-      const res = await fetch(
-        `https://api.netlify.com/api/v1/sites/${SITE_ID}/forms/rsvp/submissions?per_page=200`,
-        { headers: { Authorization: `Bearer ${TOKEN}` } }
-      );
+      const res = await fetch('/.netlify/functions/get-rsvps');
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
