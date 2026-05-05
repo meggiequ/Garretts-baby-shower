@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RSVP Tracker — Baby Shower</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Lato:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:     #BBCAD1;
+      --cream:  #F5F0E4;
+      --gold:   #B8A06A;
+      --navy:   #2C4A6A;
+      --navy2:  #4A6A8A;
+      --going:  #7BAFD4;
+      --maybe:  #B8C9A3;
+      --cantgo: #D4A5A5;
+    }
+
+    body {
+      min-height: 100vh;
+      background-color: var(--bg);
+      background-image: url('desktop.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      font-family: 'Lato', sans-serif;
+      color: var(--navy);
+    }
+
+    /* ── Frosted header ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(245,240,228,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(184,160,106,0.4);
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .header-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-weight: 500;
+      font-size: 22px;
+      color: var(--navy);
+    }
+
+    .refresh-btn {
+      background: none;
+      border: 1px solid rgba(44,74,106,0.35);
+      border-radius: 999px;
+      padding: 7px 18px;
+      font-family: 'Lato', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--navy);
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .refresh-btn:hover { background: rgba(44,74,106,0.08); border-color: var(--navy); }
+
+    /* ── Main layout ── */
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 32px 20px 60px;
+    }
+
+    /* ── Stats row ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: rgba(245,240,228,0.88);
+      backdrop-filter: blur(8px);
+      border-radius: 14px;
+      padding: 18px 14px;
+      text-align: center;
+      border: 1px solid rgba(184,160,106,0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      inset: 8px;
+      border: 1px solid rgba(184,160,106,0.25);
+      border-radius: 8px;
+      pointer-events: none;
+    }
+
+    .stat-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 600;
+      font-size: 38px;
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      opacity: 0.65;
+    }
+
+    .stat-card.total  .stat-num { color: var(--navy); }
+    .stat-card.going  .stat-num { color: #3A7BB5; }
+    .stat-card.maybe  .stat-num { color: #6A8A56; }
+    .stat-card.cantgo .stat-num { color: #A05050; }
+
+    /* ── Search / filter bar ── */
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 180px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(44,74,106,0.25);
+      background: rgba(245,240,228,0.88);
+      font-family: 'Lato', sans-serif;
+      font-size: 14px;
+      color: var(--navy);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus { border-color: var(--navy2); }
+    .search-input::placeholder { color: rgba(44,74,106,0.4); }
+
+    .filter-btns {
+      display: flex;
+      gap: 6px;
+    }
+
+    .filter-btn {
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(44,74,106,0.25);
+      background: rgba(245,240,228,0.88);
+      font-family: 'Lato', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--navy);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-btn:hover { background: rgba(44,74,106,0.08); }
+    .filter-btn.active { background: var(--navy); color: var(--cream); border-color: var(--navy); }
+
+    /* ── Table ── */
+    .table-wrap {
+      background: rgba(245,240,228,0.88);
+      backdrop-filter: blur(8px);
+      border-radius: 16px;
+      border: 1px solid rgba(184,160,106,0.3);
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      padding: 14px 18px;
+      text-align: left;
+      font-family: 'Lato', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(44,74,106,0.55);
+      border-bottom: 1px solid rgba(184,160,106,0.25);
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+    thead th:hover { color: var(--navy); }
+    thead th .sort-arrow { margin-left: 4px; opacity: 0.4; }
+    thead th.sorted .sort-arrow { opacity: 1; }
+
+    tbody tr {
+      border-bottom: 1px solid rgba(184,160,106,0.15);
+      transition: background 0.15s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(184,160,106,0.07); }
+
+    td {
+      padding: 14px 18px;
+      font-size: 14px;
+      color: var(--navy);
+    }
+
+    .td-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 17px;
+      font-weight: 500;
+      font-style: italic;
+    }
+
+    .td-date {
+      font-size: 12px;
+      color: rgba(44,74,106,0.5);
+      white-space: nowrap;
+    }
+
+    .td-notes {
+      font-size: 13px;
+      color: rgba(44,74,106,0.7);
+      max-width: 200px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .badge-going  { background: rgba(123,175,212,0.2); color: #2A6A9A; border: 1px solid rgba(123,175,212,0.4); }
+    .badge-maybe  { background: rgba(184,201,163,0.2); color: #4A6A30; border: 1px solid rgba(184,201,163,0.4); }
+    .badge-cantgo { background: rgba(212,165,165,0.2); color: #8A3030; border: 1px solid rgba(212,165,165,0.4); }
+
+    /* ── Empty / loading states ── */
+    .state-msg {
+      text-align: center;
+      padding: 60px 20px;
+      color: rgba(44,74,106,0.5);
+      font-style: italic;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+    }
+
+    @media (max-width: 599px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .filter-btns { display: none; }
+      td.td-notes, th.th-notes,
+      td.td-guests, th.th-guests { display: none; }
+      .header-title { font-size: 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="header-title">Baby Shower RSVPs</span>
+  <button class="refresh-btn" onclick="loadRsvps()">↻ Refresh</button>
+</header>
+
+<main>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card total">
+      <div class="stat-num" id="stat-total">—</div>
+      <div class="stat-label">Total RSVPs</div>
+    </div>
+    <div class="stat-card going">
+      <div class="stat-num" id="stat-going">—</div>
+      <div class="stat-label">Going</div>
+    </div>
+    <div class="stat-card maybe">
+      <div class="stat-num" id="stat-maybe">—</div>
+      <div class="stat-label">Maybe</div>
+    </div>
+    <div class="stat-card cantgo">
+      <div class="stat-num" id="stat-cantgo">—</div>
+      <div class="stat-label">Can't Go</div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <input class="search-input" type="text" id="search-input" placeholder="Search by name…" oninput="renderTable()" />
+    <div class="filter-btns">
+      <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">All</button>
+      <button class="filter-btn" data-filter="Going" onclick="setFilter('Going', this)">Going</button>
+      <button class="filter-btn" data-filter="Maybe" onclick="setFilter('Maybe', this)">Maybe</button>
+      <button class="filter-btn" data-filter="Can't go" onclick="setFilter('Can\'t go', this)">Can't Go</button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th onclick="sortBy('name')">Name <span class="sort-arrow">↕</span></th>
+          <th onclick="sortBy('attending')">Status <span class="sort-arrow">↕</span></th>
+          <th class="th-guests" onclick="sortBy('guests')">Guests <span class="sort-arrow">↕</span></th>
+          <th class="th-notes">Notes</th>
+          <th onclick="sortBy('created_at')">Date <span class="sort-arrow">↕</span></th>
+        </tr>
+      </thead>
+      <tbody id="rsvp-tbody">
+        <tr><td colspan="5" class="state-msg">Enter your Netlify credentials above to load RSVPs.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</main>
+
+<script>
+  let allSubmissions = [];
+  let activeFilter = 'all';
+  let sortKey = 'created_at';
+  let sortDir = -1; // -1 = desc
+
+  const SITE_ID = 'YOUR_SITE_ID_HERE';
+  const TOKEN   = 'YOUR_TOKEN_HERE';
+
+  async function loadRsvps() {
+    document.getElementById('rsvp-tbody').innerHTML =
+      '<tr><td colspan="5" class="state-msg">Loading…</td></tr>';
+
+    try {
+      const res = await fetch(
+        `https://api.netlify.com/api/v1/sites/${SITE_ID}/forms/rsvp/submissions?per_page=200`,
+        { headers: { Authorization: `Bearer ${TOKEN}` } }
+      );
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const data = await res.json();
+      allSubmissions = data;
+      updateStats();
+      renderTable();
+    } catch (err) {
+      document.getElementById('rsvp-tbody').innerHTML =
+        `<tr><td colspan="5" class="state-msg">Failed to load: ${err.message}</td></tr>`;
+    }
+  }
+
+  function updateStats() {
+    const going  = allSubmissions.filter(s => s.data.attending === 'Going').length;
+    const maybe  = allSubmissions.filter(s => s.data.attending === 'Maybe').length;
+    const cantgo = allSubmissions.filter(s => s.data.attending === "Can't go").length;
+    document.getElementById('stat-total').textContent  = allSubmissions.length;
+    document.getElementById('stat-going').textContent  = going;
+    document.getElementById('stat-maybe').textContent  = maybe;
+    document.getElementById('stat-cantgo').textContent = cantgo;
+  }
+
+  function setFilter(filter, btn) {
+    activeFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderTable();
+  }
+
+  function sortBy(key) {
+    if (sortKey === key) sortDir *= -1;
+    else { sortKey = key; sortDir = 1; }
+    document.querySelectorAll('thead th').forEach(th => th.classList.remove('sorted'));
+    const idx = ['name','attending','guests','notes','created_at'];
+    const colIdx = idx.indexOf(key);
+    document.querySelectorAll('thead th')[colIdx]?.classList.add('sorted');
+    renderTable();
+  }
+
+  function renderTable() {
+    const query = document.getElementById('search-input').value.toLowerCase();
+
+    let rows = allSubmissions.filter(s => {
+      const name = (s.data.name || '').toLowerCase();
+      if (query && !name.includes(query)) return false;
+      if (activeFilter !== 'all' && s.data.attending !== activeFilter) return false;
+      return true;
+    });
+
+    rows.sort((a, b) => {
+      let av = a.data[sortKey] || a[sortKey] || '';
+      let bv = b.data[sortKey] || b[sortKey] || '';
+      if (sortKey === 'created_at') { av = new Date(av); bv = new Date(bv); }
+      return av < bv ? -sortDir : av > bv ? sortDir : 0;
+    });
+
+    if (rows.length === 0) {
+      document.getElementById('rsvp-tbody').innerHTML =
+        '<tr><td colspan="5" class="state-msg">No RSVPs found.</td></tr>';
+      return;
+    }
+
+    document.getElementById('rsvp-tbody').innerHTML = rows.map(s => {
+      const d = s.data;
+      const attending = d.attending || '—';
+      const badgeClass = attending === 'Going' ? 'badge-going'
+                        : attending === 'Maybe' ? 'badge-maybe'
+                        : attending === "Can't go" ? 'badge-cantgo' : '';
+      const date = s.created_at
+        ? new Date(s.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        : '—';
+      const notes = d.notes ? escHtml(d.notes) : '<span style="opacity:0.3">—</span>';
+      return `
+        <tr>
+          <td class="td-name">${escHtml(d.name || '—')}</td>
+          <td><span class="badge ${badgeClass}">${escHtml(attending)}</span></td>
+          <td class="td-guests">${escHtml(d.guests || '—')}</td>
+          <td class="td-notes">${notes}</td>
+          <td class="td-date">${date}</td>
+        </tr>`;
+    }).join('');
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // Load on page open
+  loadRsvps();
+</script>
+</body>
+</html>
