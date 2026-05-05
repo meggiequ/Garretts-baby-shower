@@ -1,38 +1,53 @@
+const https = require('https');
+
 exports.handler = async function(event, context) {
-  const SITE_ID = '390c47c6-ce28-4255-9d78-ff546b01cd5a';
-  const TOKEN   = 'nfp_G8n63tUUBJiyLhzjzF25gJ7jFrZA8TWmea27';
+  const siteId = process.env.NETLIFY_SITE_ID;
+  const token  = process.env.NETLIFY_TOKEN;
 
   if (!siteId || !token) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Missing SITE_ID or NETLIFY_TOKEN environment variables.' })
+      body: JSON.stringify({ error: 'Missing NETLIFY_SITE_ID or NETLIFY_TOKEN environment variables.' })
     };
   }
 
-  try {
-    const res = await fetch(
-      `https://api.netlify.com/api/v1/sites/${siteId}/forms/rsvp/submissions?per_page=200`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    if (!res.ok) {
-      return {
-        statusCode: res.status,
-        body: JSON.stringify({ error: `Netlify API returned ${res.status}` })
-      };
-    }
-
-    const data = await res.json();
-
-    return {
-      statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+  return new Promise((resolve) => {
+    const options = {
+      hostname: 'api.netlify.com',
+      path: `/api/v1/sites/${siteId}/forms/rsvp/submissions?per_page=200`,
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
     };
-  } catch (err) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: err.message })
-    };
-  }
+
+    const req = https.request(options, (res) => {
+      let body = '';
+      res.on('data', chunk => { body += chunk; });
+      res.on('end', () => {
+        if (res.statusCode !== 200) {
+          resolve({
+            statusCode: res.statusCode,
+            body: JSON.stringify({ error: `Netlify API returned ${res.statusCode}`, detail: body })
+          });
+          return;
+        }
+        resolve({
+          statusCode: 200,
+          headers: { 'Content-Type': 'application/json' },
+          body
+        });
+      });
+    });
+
+    req.on('error', (err) => {
+      resolve({
+        statusCode: 500,
+        body: JSON.stringify({ error: err.message })
+      });
+    });
+
+    req.end();
+  });
 };
