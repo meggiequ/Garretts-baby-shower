@@ -350,9 +350,9 @@
   }
 
   function updateStats() {
-    const going  = allSubmissions.filter(s => s.data.attending === 'Going').length;
-    const maybe  = allSubmissions.filter(s => s.data.attending === 'Maybe').length;
-    const cantgo = allSubmissions.filter(s => s.data.attending === "Can't go").length;
+    const going  = allSubmissions.filter(s => (s.data?.attending || s.attending) === 'Going').length;
+    const maybe  = allSubmissions.filter(s => (s.data?.attending || s.attending) === 'Maybe').length;
+    const cantgo = allSubmissions.filter(s => (s.data?.attending || s.attending) === "Can't go").length;
     document.getElementById('stat-total').textContent  = allSubmissions.length;
     document.getElementById('stat-going').textContent  = going;
     document.getElementById('stat-maybe').textContent  = maybe;
@@ -380,15 +380,18 @@
     const query = document.getElementById('search-input').value.toLowerCase();
 
     let rows = allSubmissions.filter(s => {
-      const name = (s.data.name || '').toLowerCase();
+      const d = s.data || s;
+      const name = (d.name || '').toLowerCase();
       if (query && !name.includes(query)) return false;
-      if (activeFilter !== 'all' && s.data.attending !== activeFilter) return false;
+      if (activeFilter !== 'all' && d.attending !== activeFilter) return false;
       return true;
     });
 
     rows.sort((a, b) => {
-      let av = a.data[sortKey] || a[sortKey] || '';
-      let bv = b.data[sortKey] || b[sortKey] || '';
+      const ad = a.data || a;
+      const bd = b.data || b;
+      let av = ad[sortKey] || a[sortKey] || '';
+      let bv = bd[sortKey] || b[sortKey] || '';
       if (sortKey === 'created_at') { av = new Date(av); bv = new Date(bv); }
       return av < bv ? -sortDir : av > bv ? sortDir : 0;
     });
@@ -400,7 +403,7 @@
     }
 
     document.getElementById('rsvp-tbody').innerHTML = rows.map(s => {
-      const d = s.data;
+      const d = s.data || s;
       const attending = d.attending || '—';
       const badgeClass = attending === 'Going' ? 'badge-going'
                         : attending === 'Maybe' ? 'badge-maybe'
