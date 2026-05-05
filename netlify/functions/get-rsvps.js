@@ -4,7 +4,7 @@ function fetchPage(siteId, token, offset) {
   return new Promise((resolve, reject) => {
     const options = {
       hostname: 'api.netlify.com',
-      path: `/api/v1/sites/${siteId}/forms/rsvp/submissions?per_page=100&offset=${offset}`,
+      path: `/api/v1/sites/${siteId}/forms`,
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -50,7 +50,6 @@ exports.handler = async function(event, context) {
       if (page.length < 100) break;
       offset += 100;
     }
-
     return {
       statusCode: 200,
       headers: {
