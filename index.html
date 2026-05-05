@@ -29,7 +29,7 @@
     /* ── Fixed background — starts BELOW the nav ── */
     .bg {
       position: fixed;
-      top: var(--nav-h);   /* starts after nav */
+      top: var(--nav-h);
       left: 0; right: 0; bottom: 0;
       z-index: 0;
       background-color: var(--bg);
@@ -69,6 +69,26 @@
       background: rgba(184,160,106,0.5);
     }
 
+    /* ── mweb: nav moves to bottom, border+spacing moves to top ── */
+    @media (max-width: 599px) {
+      .bg {
+        top: 0;
+        bottom: var(--nav-h);
+      }
+      body::before {
+        top: auto;
+        bottom: 0;
+      }
+      .top-nav {
+        top: auto;
+        bottom: 0;
+      }
+      .top-nav::after {
+        bottom: auto;
+        top: 6px;
+      }
+    }
+
     .top-nav button {
       background: none;
       border: none;
@@ -100,6 +120,12 @@
       left: 0; right: 0; bottom: 0;
       overflow: hidden;
       z-index: 10;
+    }
+    @media (max-width: 599px) {
+      .scroll-container {
+        top: 0;
+        bottom: var(--nav-h);
+      }
     }
 
     /* ── Track: 3 panels tall ── */
