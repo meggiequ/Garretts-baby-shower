@@ -14,7 +14,7 @@ exports.handler = async function(event, context) {
   return new Promise((resolve) => {
     const options = {
       hostname: 'api.netlify.com',
-      path: `/api/v1/sites/${siteId}/forms/rsvp/submissions?per_page=200`,
+      path: `/api/v1/sites/${siteId}/forms`,
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -29,7 +29,7 @@ exports.handler = async function(event, context) {
         if (res.statusCode !== 200) {
           resolve({
             statusCode: res.statusCode,
-            body: JSON.stringify({ error: `Netlify API returned ${res.statusCode}`, detail: body })
+            body: JSON.stringify({ error: `Netlify API returned ${res.statusCode}`, detail: body, siteId: siteId.slice(0,8) + '...' })
           });
           return;
         }
