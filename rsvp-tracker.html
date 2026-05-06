@@ -267,7 +267,13 @@
       font-size: 18px;
     }
 
+    .back-short { display: none; }
+
     @media (max-width: 599px) {
+      .back-full  { display: none; }
+      .back-short { display: inline; }
+      .header-title { display: none; }
+    }
       .stats { grid-template-columns: repeat(2, 1fr); }
       .filter-btns { display: none; }
       td.td-notes, th.th-notes,
@@ -279,9 +285,9 @@
 <body>
 
 <header>
-  <a href="/index.html" class="back-btn">← Back to Baby Shower</a>
+  <a href="/index.html" class="back-btn"><span class="back-full">← Back to Baby Shower</span><span class="back-short">← Baby Shower</span></a>
   <span class="header-title">Baby Shower RSVPs</span>
-  <button class="refresh-btn" onclick="loadRsvps()">↻ Refresh</button>
+  <button class="back-btn" onclick="loadRsvps()">Refresh</button>
 </header>
 
 <main>
