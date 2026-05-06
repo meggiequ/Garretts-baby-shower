@@ -37,7 +37,7 @@
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(245,240,228,0.92);
+      background: rgba(244,241,235,0.92);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid rgba(184,160,106,0.4);
       padding: 18px 32px;
@@ -85,7 +85,7 @@
     }
 
     .stat-card {
-      background: rgba(245,240,228,0.88);
+      background: rgba(244,241,235,0.88);
       backdrop-filter: blur(8px);
       border-radius: 14px;
       padding: 18px 14px;
@@ -139,7 +139,7 @@
       padding: 10px 16px;
       border-radius: 999px;
       border: 1px solid rgba(44,74,106,0.25);
-      background: rgba(245,240,228,0.88);
+      background: rgba(244,241,235,0.88);
       font-family: 'Lato', sans-serif;
       font-size: 14px;
       color: var(--navy);
@@ -158,7 +158,7 @@
       padding: 8px 16px;
       border-radius: 999px;
       border: 1px solid rgba(44,74,106,0.25);
-      background: rgba(245,240,228,0.88);
+      background: rgba(244,241,235,0.88);
       font-family: 'Lato', sans-serif;
       font-size: 13px;
       font-weight: 500;
@@ -171,7 +171,7 @@
 
     /* ── Table ── */
     .table-wrap {
-      background: rgba(245,240,228,0.88);
+      background: rgba(244,241,235,0.88);
       backdrop-filter: blur(8px);
       border-radius: 16px;
       border: 1px solid rgba(184,160,106,0.3);
@@ -267,6 +267,9 @@
 <body>
 
 <header>
+  <a href="/index.html" style="font-family:'Lato',sans-serif;font-size:13px;font-weight:500;color:var(--navy);text-decoration:none;padding:7px 18px;border:1px solid rgba(44,74,106,0.35);border-radius:999px;transition:background 0.2s;"
+     onmouseover="this.style.background='rgba(44,74,106,0.08)'"
+     onmouseout="this.style.background='transparent'">← Back to Baby Shower</a>
   <span class="header-title">Baby Shower RSVPs</span>
   <button class="refresh-btn" onclick="loadRsvps()">↻ Refresh</button>
 </header>
@@ -277,7 +280,7 @@
   <div class="stats">
     <div class="stat-card total">
       <div class="stat-num" id="stat-total">—</div>
-      <div class="stat-label">Total RSVPs</div>
+      <div class="stat-label">RSVPs</div>
     </div>
     <div class="stat-card going">
       <div class="stat-num" id="stat-going">—</div>
@@ -287,9 +290,9 @@
       <div class="stat-num" id="stat-maybe">—</div>
       <div class="stat-label">Maybe</div>
     </div>
-    <div class="stat-card cantgo">
-      <div class="stat-num" id="stat-cantgo">—</div>
-      <div class="stat-label">Can't Go</div>
+    <div class="stat-card going">
+      <div class="stat-num" id="stat-guests">—</div>
+      <div class="stat-label">Total People</div>
     </div>
   </div>
 
@@ -349,14 +352,26 @@
     }
   }
 
+  function parseGuests(val) {
+    if (!val) return 1;
+    const s = String(val).trim().toLowerCase();
+    if (s === 'just me') return 1;
+    const n = parseInt(s.replace('+', ''), 10);
+    return isNaN(n) ? 1 : 1 + n; // +1 means 2 people total, etc.
+  }
+
   function updateStats() {
-    const going  = allSubmissions.filter(s => (s.data?.attending || s.attending) === 'Going').length;
-    const maybe  = allSubmissions.filter(s => (s.data?.attending || s.attending) === 'Maybe').length;
-    const cantgo = allSubmissions.filter(s => (s.data?.attending || s.attending) === "Can't go").length;
+    const going  = allSubmissions.filter(s => (s.data?.attending || s.attending) === 'Going');
+    const maybe  = allSubmissions.filter(s => (s.data?.attending || s.attending) === 'Maybe');
+    const cantgo = allSubmissions.filter(s => (s.data?.attending || s.attending) === "Can't go");
+    const totalGuests = going.reduce((sum, s) => {
+      const d = s.data || s;
+      return sum + parseGuests(d.guests);
+    }, 0);
     document.getElementById('stat-total').textContent  = allSubmissions.length;
-    document.getElementById('stat-going').textContent  = going;
-    document.getElementById('stat-maybe').textContent  = maybe;
-    document.getElementById('stat-cantgo').textContent = cantgo;
+    document.getElementById('stat-going').textContent  = going.length;
+    document.getElementById('stat-maybe').textContent  = maybe.length;
+    document.getElementById('stat-guests').textContent = totalGuests;
   }
 
   function setFilter(filter, btn) {
